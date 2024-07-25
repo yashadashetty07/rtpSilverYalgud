@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:rtp_silver_yalgud/screens/employee_management.dart';
 import 'package:rtp_silver_yalgud/screens/work_management.dart';
+
+import '../auth/email_auth.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -11,18 +14,28 @@ class HomePage extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor:Colors.black87,
-          // const Color.fromRGBO(23, 21, 59, 1),
+          backgroundColor: Colors.black87,
           title: const TabBar(
             tabs: [
               Tab(icon: Icon(Icons.home), text: 'Home Page'),
               Tab(icon: Icon(Icons.person), text: 'Employees'),
               Tab(icon: Icon(Icons.work), text: 'Works'),
             ],
-            labelColor: Colors.yellow, // Color of the text in the selected tab
-            unselectedLabelColor: Colors.white, // Color of the text in the unselected tabs
+            labelColor: Colors.yellow,
+            unselectedLabelColor: Colors.white,
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 1),
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+              },
+            ),
+          ],
         ),
         body: const TabBarView(
           children: [

@@ -32,6 +32,16 @@ class _WorkManagementState extends State<WorkManagement> {
   final Set<int> _selectedWorks = <int>{};
   final String _searchTerm = '';
   final DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+  @override
+  void dispose() {
+    shikka.dispose();
+    category.dispose();
+    assignWeight.dispose();
+    submitWeight.dispose();
+    searchController.dispose();
+    msgController.dispose();
+    super.dispose();
+  }
 
   Future<void> _selectDate(BuildContext context, bool isAssignDate) async {
     final DateTime? picked = await showDatePicker(
@@ -40,7 +50,7 @@ class _WorkManagementState extends State<WorkManagement> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() {
         if (isAssignDate) {
           assignDate = picked;
@@ -649,6 +659,8 @@ class _WorkManagementState extends State<WorkManagement> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
         onPressed: () {
           _addNewWork(context);
           resetValues();
@@ -665,7 +677,7 @@ class _WorkManagementState extends State<WorkManagement> {
       category.clear();
       assignWeight.clear();
       submitWeight.clear();
-      assignDate = DateTime.now();
+      assignDate = assignDate;
       submitDate = null;
       workDone = false;
       msgController.clear();

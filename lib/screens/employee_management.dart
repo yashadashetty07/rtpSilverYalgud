@@ -34,6 +34,8 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
 
   Widget addEmpButton() {
     return FloatingActionButton(
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
       onPressed: () {
         showDialog(
           context: context,
