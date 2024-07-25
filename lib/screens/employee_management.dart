@@ -18,12 +18,16 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black26,
       // appBar: AppBar(
       //   title: const Text("Employees"),
       //   centerTitle: true,
       //   backgroundColor: Colors.black54,
       // ),
-      body: EmployeesList(),
+      body:Container(
+
+        child:  EmployeesList(),
+      ),
       floatingActionButton: addEmpButton(),
     );
   }
@@ -69,7 +73,10 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
               TextButton(
                 onPressed: () {
                   if (empName != null && empPhone != null) {
-                    FirebaseFirestore.instance.collection("employees").doc(empPhone).set({
+                    FirebaseFirestore.instance
+                        .collection("employees")
+                        .doc(empPhone)
+                        .set({
                       "empName": empName,
                       "empPhone": empPhone,
                     });
@@ -111,31 +118,47 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
           itemCount: snapshot.data!.docs.length,
           itemBuilder: (context, index) {
             var data = snapshot.data!.docs[index];
-            return ListTile(
-              leading: CircleAvatar(
-                child: Text("${index + 1}"),
-              ),
-              title: Text(data["empName"]),
-              subtitle: Text(data["empPhone"].toString()),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      updateData(data.id, data["empName"], data["empPhone"]);
-                    },
+            return Card(
+              elevation: 5,
+              margin: const EdgeInsets.all(5),
+              shadowColor: Colors.black87,
+              child: ListTile(
+                leading: CircleAvatar(
+                  child: Text("${index + 1}"),
+                ),
+                title: Text(data["empName"],
+                  style: const TextStyle(
+                  fontSize: 22,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Roboto',
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (_) => deleteConfirmationDialog(data.id),
-                      );
-                    },
+                ),
+                subtitle: Text(data["empPhone"].toString(),
+                  style: const TextStyle(
+                      fontSize: 20,
+                    fontWeight: FontWeight.w500
                   ),
-                ],
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        updateData(data.id, data["empName"], data["empPhone"]);
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) => deleteConfirmationDialog(data.id),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -143,7 +166,6 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
       },
     );
   }
-
 
   Widget deleteConfirmationDialog(String empPhone) {
     return AlertDialog(
@@ -168,12 +190,13 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
 
   void deleteEmployees(String empPhone) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DocumentReference documentRef = firestore.collection('employees').doc(empPhone);
+    DocumentReference documentRef =
+        firestore.collection('employees').doc(empPhone);
     try {
       await documentRef.delete();
-      Fluttertoast.showToast(msg:'Document successfully deleted!');
+      Fluttertoast.showToast(msg: 'Document successfully deleted!');
     } catch (e) {
-      Fluttertoast.showToast(msg:'Error deleting document: $e');
+      Fluttertoast.showToast(msg: 'Error deleting document: $e');
     }
   }
 
@@ -181,8 +204,10 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
     showDialog(
       context: context,
       builder: (context) {
-        TextEditingController nameController = TextEditingController(text: currentName);
-        TextEditingController phoneController = TextEditingController(text: currentPhone);
+        TextEditingController nameController =
+            TextEditingController(text: currentName);
+        TextEditingController phoneController =
+            TextEditingController(text: currentPhone);
 
         return AlertDialog(
           title: const Text("Update Employee"),
@@ -221,16 +246,19 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
                 String? newPhone = phoneController.text;
 
                 if (newName.isNotEmpty && newPhone.isNotEmpty) {
-                  DocumentReference docRef = FirebaseFirestore.instance.collection('employees').doc(documentId);
+                  DocumentReference docRef = FirebaseFirestore.instance
+                      .collection('employees')
+                      .doc(documentId);
 
                   try {
                     await docRef.update({
                       'empName': newName,
                       'empPhone': newPhone,
                     });
-                    Fluttertoast.showToast(msg:'Document successfully updated!');
+                    Fluttertoast.showToast(
+                        msg: 'Document successfully updated!');
                   } catch (e) {
-                    Fluttertoast.showToast(msg:'Error updating document: $e');
+                    Fluttertoast.showToast(msg: 'Error updating document: $e');
                   }
 
                   Navigator.pop(context);
@@ -243,10 +271,6 @@ class _EmployeeManagementState extends State<EmployeeManagement> {
       },
     );
   }
-
-
-
-
 
 //end of code
 }

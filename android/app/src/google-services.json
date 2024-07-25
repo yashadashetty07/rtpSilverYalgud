@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "813229464460",
+    "project_id": "rtpsilveryalgud-33042",
+    "storage_bucket": "rtpsilveryalgud-33042.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813229464460:android:4d21f8831c78daa102d4a9",
+        "android_client_info": {
+          "package_name": "com.android.application"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3w788w-hjccggnjzALDvOUApc1mEUOa8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:813229464460:android:0fbc0a4ac68eec4d02d4a9",
+        "android_client_info": {
+          "package_name": "com.example.rtp_silver_yalgud"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3w788w-hjccggnjzALDvOUApc1mEUOa8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -21,10 +21,7 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for ios - '
@@ -50,21 +47,29 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCxkMEKQ7OR9_WIR_IEq1NgV6ofjTkEIW4',
-    appId: '1:605835190676:web:4ac8b50391145823f22f81',
-    messagingSenderId: '605835190676',
-    projectId: 'rtpsilveryalgud',
-    authDomain: 'rtpsilveryalgud.firebaseapp.com',
-    storageBucket: 'rtpsilveryalgud.appspot.com',
+    apiKey: 'AIzaSyCZVjGVXlhSSIUajMerRo0C17DUWM9LH_A',
+    appId: '1:813229464460:web:948b8de01942778102d4a9',
+    messagingSenderId: '813229464460',
+    projectId: 'rtpsilveryalgud-33042',
+    authDomain: 'rtpsilveryalgud-33042.firebaseapp.com',
+    storageBucket: 'rtpsilveryalgud-33042.appspot.com',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCxkMEKQ7OR9_WIR_IEq1NgV6ofjTkEIW4',
-    appId: '1:605835190676:web:5ac6d2463318c47ff22f81',
-    messagingSenderId: '605835190676',
-    projectId: 'rtpsilveryalgud',
-    authDomain: 'rtpsilveryalgud.firebaseapp.com',
-    storageBucket: 'rtpsilveryalgud.appspot.com',
+    apiKey: 'AIzaSyCZVjGVXlhSSIUajMerRo0C17DUWM9LH_A',
+    appId: '1:813229464460:web:8d8e74bcc645664902d4a9',
+    messagingSenderId: '813229464460',
+    projectId: 'rtpsilveryalgud-33042',
+    authDomain: 'rtpsilveryalgud-33042.firebaseapp.com',
+    storageBucket: 'rtpsilveryalgud-33042.appspot.com',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyB3w788w-hjccggnjzALDvOUApc1mEUOa8',
+    appId: '1:813229464460:android:4d21f8831c78daa102d4a9',
+    messagingSenderId: '813229464460',
+    projectId: 'rtpsilveryalgud-33042',
+    storageBucket: 'rtpsilveryalgud-33042.appspot.com',
   );
 
 }

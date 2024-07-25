@@ -8,8 +8,10 @@ class Works {
   DateTime assignDate;
   DateTime submitDate;
   bool workDone = false;
+  String? msg;
 
   Works({
+    this.msg,
     this.id,
     required this.empName,
     required this.shikka,
@@ -24,6 +26,7 @@ class Works {
   // Convert a Works object into a Map object
   Map<String, dynamic> toMap() {
     return {
+      'msg':msg,
       'id': id,
       'empName': empName,
       'shikka': shikka,

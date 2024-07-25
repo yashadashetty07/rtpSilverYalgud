@@ -11,13 +11,17 @@ class HomePage extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.orangeAccent,
+          backgroundColor:Colors.black87,
+          // const Color.fromRGBO(23, 21, 59, 1),
           title: const TabBar(
             tabs: [
-              Tab(icon: Icon(Icons.home,color: Colors.black,), text: 'Home Page'),
-              Tab(icon: Icon(Icons.person,color: Colors.black), text: 'Employees'),
-              Tab(icon: Icon(Icons.work,color: Colors.black), text: 'Works'),
-            ],padding: EdgeInsets.symmetric(vertical: 10,horizontal: 1),
+              Tab(icon: Icon(Icons.home), text: 'Home Page'),
+              Tab(icon: Icon(Icons.person), text: 'Employees'),
+              Tab(icon: Icon(Icons.work), text: 'Works'),
+            ],
+            labelColor: Colors.yellow, // Color of the text in the selected tab
+            unselectedLabelColor: Colors.white, // Color of the text in the unselected tabs
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 1),
           ),
         ),
         body: const TabBarView(
@@ -37,9 +41,9 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color.fromRGBO(238, 233, 239, 1.0),
-      child: const Center(
+    return const Scaffold(
+      backgroundColor: Colors.black26,
+      body: Center(
         child: SingleChildScrollView(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -47,10 +51,10 @@ class HomeContent extends StatelessWidget {
             children: [
               Image(
                 image: AssetImage("assets/images/rtp_logo2.png"),
-                width: 300,
-                height: 300,
+                width: 400,
+                height: 400,
               ),
-              SizedBox(width: 30),
+              SizedBox(width: 80),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 30, horizontal: 10),
                 child: Column(
@@ -58,7 +62,7 @@ class HomeContent extends StatelessWidget {
                     Text(
                       'Welcome to',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
@@ -69,7 +73,7 @@ class HomeContent extends StatelessWidget {
                         'R T Patil Silver Ornaments\n Pvt. Ltd. Yalgud',
                         style: TextStyle(
                           fontFamily: "Roboto",
-                          fontSize: 28,
+                          fontSize: 35,
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
