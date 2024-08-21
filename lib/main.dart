@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rtp_silver_yalgud/auth/email_auth.dart';
 import 'package:rtp_silver_yalgud/screens/home_page.dart';
+import 'package:rtp_silver_yalgud/screens/shikkaManagement.dart';
+import 'package:rtp_silver_yalgud/screens/work_management.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +35,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
         debugShowCheckedModeBanner: false,
-      home: LoginPage(), // Set EmployeeManagement as the home screen
+      home: WorkManagement(), // Set EmployeeManagement as the home screen
     );
   }
 }

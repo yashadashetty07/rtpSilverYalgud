@@ -1,4 +1,4 @@
-// ignore_for_file: unused_field, avoid_print
+// ignore_for_file: unused_field, avoid_print, unused_local_variable, unused_element
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -12,22 +12,23 @@ class WorkManagement extends StatefulWidget {
 }
 
 class _WorkManagementState extends State<WorkManagement> {
-  String? empName;
- // String? category;
-  //String? shikka;
-  String? id;
-
-  final  shikka = TextEditingController();
-  final  category = TextEditingController();
-  final assignWeight = TextEditingController();
-  final submitWeight = TextEditingController();
-  final searchController = TextEditingController();
-  final msgController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
   DateTime assignDate = DateTime.now();
+  String? empName;
+  final shikka = TextEditingController();
+  final category = TextEditingController();
+  final matiWeight = TextEditingController();
+  final designWeight = TextEditingController();
+  final netWeight = TextEditingController();
   DateTime? submitDate;
+  final submitWeight = TextEditingController();
+  final amount = TextEditingController();
+  bool paymentDone = false;
+  DateTime? paymentDate;
+  final note = TextEditingController();
   bool workDone = false;
 
+  final _formKey = GlobalKey<FormState>();
+  final searchController = TextEditingController();
   final bool _isMultiSelectMode = false;
   final Set<int> _selectedWorks = <int>{};
   final String _searchTerm = '';
@@ -36,10 +37,12 @@ class _WorkManagementState extends State<WorkManagement> {
   void dispose() {
     shikka.dispose();
     category.dispose();
-    assignWeight.dispose();
+    matiWeight.dispose();
+    designWeight.dispose();
+    netWeight.dispose();
     submitWeight.dispose();
     searchController.dispose();
-    msgController.dispose();
+    note.dispose();
     super.dispose();
   }
 
@@ -48,7 +51,7 @@ class _WorkManagementState extends State<WorkManagement> {
       context: context,
       initialDate: isAssignDate ? assignDate : submitDate ?? DateTime.now(),
       firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
+      lastDate: DateTime(2100),
     );
     if (picked != null && mounted) {
       setState(() {
@@ -83,102 +86,114 @@ class _WorkManagementState extends State<WorkManagement> {
             child: Text("No Data Found"),
           );
         }
-        return ListView.builder(
-          itemCount: snapshot.data!.docs.length,
-          itemBuilder: (context, index) {
-            var data = snapshot.data!.docs[index];
-            bool workDone = data['workDone'] ?? false;
-            return Card(
-              elevation: 12,
-              margin: const EdgeInsets.all(10),
-              shadowColor: Colors.black,
-              child: Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Employee Name: ${data['empName']}',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 5),
-                          Text('Shikka: ${data['shikka']}'),
-                          const SizedBox(height: 5),
-                          Text('Category: ${data['category']}'),
-                          const SizedBox(height: 5),
-                          Text('Assign Weight: ${data['assignWeight']}'),
-                          const SizedBox(height: 5),
-                          Text('Assign Date: ${dateFormat.format((data['assignDate'] as Timestamp).toDate())}'),
-                          const SizedBox(height: 5),
-                          Text('Submit Weight: ${data['submitWeight']}'),
-                          const SizedBox(height: 5),
-                          Text('Submit Date: ${data['submitDate'] != null ? dateFormat.format((data['submitDate'] as Timestamp).toDate()) : 'N/A'}'),
-                          const SizedBox(height: 5),
-                          Text('Work Done: ${data['workDone']}'),
-                          const SizedBox(height: 5),
-                          Text('Note: ${data['msg'] ?? 'No note'}'),
-                        ],
-                      ),
-                    ),
-                    Checkbox(
-                      value: workDone,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          workDone = value ?? false;
-                          if (workDone) {
-                            _selectDate(context, false).then((_) {
-                              FirebaseFirestore.instance
-                                  .collection("works")
-                                  .doc(data.id)
-                                  .update({"workDone": workDone, "submitDate": submitDate});
-                            });
-                          } else {
-                            FirebaseFirestore.instance
-                                .collection("works")
-                                .doc(data.id)
-                                .update({"workDone": workDone, "submitDate": null});
-                          }
-                        });
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () {
-                        _editWork(context, data);
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        _confirmDelete(context, data);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
+
+        List<DataRow> rows = [];
+        for (var data in snapshot.data!.docs) {
+          bool workDone = data['workDone'] ?? false;
+          DateTime? assignDate;
+          DateTime? submitDate;
+          DateTime? paymentDate;
+
+          // Handle assignDate
+          if (data['assignDate'] is Timestamp) {
+            assignDate = (data['assignDate'] as Timestamp).toDate();
+          } else if (data['assignDate'] is String) {
+            assignDate = DateTime.tryParse(data['assignDate']);
+          }
+
+          // Handle submitDate
+          if (data['submitDate'] is Timestamp) {
+            submitDate = (data['submitDate'] as Timestamp).toDate();
+          } else if (data['submitDate'] is String) {
+            submitDate = DateTime.tryParse(data['submitDate']);
+          }
+
+          // Handle paymentDate
+          if (data['paymentDate'] is Timestamp) {
+            paymentDate = (data['paymentDate'] as Timestamp).toDate();
+          } else if (data['paymentDate'] is String) {
+            paymentDate = DateTime.tryParse(data['paymentDate']);
+          }
+
+          rows.add(
+            DataRow(
+              cells: [
+                DataCell(Text(
+                  assignDate != null ? dateFormat.format(assignDate) : 'N/A',
+                )),
+                DataCell(
+                    TextButton(
+                        onPressed: () {
+                  _editWork(context, data);
+                },
+                child:Text(data['empName'] ?? ''))),
+                DataCell(Text(data['shikka'] ?? '')),
+                DataCell(Text(data['category'] ?? '')),
+                DataCell(Text((data['matiWeight'] ?? 0).toString())),
+                DataCell(Text((data['designWeight'] ?? 0).toString())),
+                DataCell(Text((data['netWeight'] ?? 0).toString())),
+                DataCell(Text(
+                  submitDate != null ? dateFormat.format(submitDate) : 'N/A',
+                )),
+                DataCell(Text((data['submitWeight'] ?? 0).toString())),
+                DataCell(Text(workDone.toString())),
+                DataCell(Text(data['amount'] ?? '')),
+                DataCell(Text((data['paymentDone'] ?? false).toString())),
+                DataCell(Text(
+                  paymentDate != null ? dateFormat.format(paymentDate) : 'N/A',
+                )),
+                DataCell(Text(data['note'] ?? 'No note')),
+              ],
+            ),
+          );
+        }
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: DataTable(decoration: BoxDecoration(
+            border: Border.all(color: Colors.blueAccent, width: 2), // Customize border color and width
+            borderRadius: BorderRadius.circular(8), // Optional: adds rounded corners
+          ),columnSpacing: 65,
+            columns: const [
+              DataColumn(label: Text('तारीख',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('नाव',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('शिक्का',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('कॅटेगरी',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('माटी\nवजन',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('डिझाईन\nवजन',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('ए.वजन',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('जमा\nतारीख',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('जमा\nवजन',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('काम\nपूर्ण',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('रक्कम',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('बिल\nझाले',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('बिल\nतारीख',style: TextStyle(fontWeight: FontWeight.bold),)),
+              DataColumn(label: Text('Note',style: TextStyle(fontWeight: FontWeight.bold),)),
+            ],
+            rows: rows,
+          ),
         );
       },
     );
   }
 
   void _editWork(BuildContext context, QueryDocumentSnapshot data) {
+    // Initialize form field values
+    assignDate = _parseDate(data['assignDate'])!;
     empName = data['empName'];
-    // shikka = data['shikka'];
-    // category = data['category'];
-    shikka.text = data['shikka'];
-    category.text = data['category'];
-    assignWeight.text = data['assignWeight'].toString();
-    submitWeight.text = data['submitWeight'].toString();
-    assignDate = (data['assignDate'] as Timestamp).toDate();
-    submitDate = data['submitDate'] != null ? (data['submitDate'] as Timestamp).toDate() : null;
+    shikka.text = data['shikka'] ?? '';
+    category.text = data['category'] ?? '';
+    matiWeight.text = (data['matiWeight'] ?? 0).toString();
+    designWeight.text = (data['designWeight'] ?? 0).toString();
+    int matiWeightValue = int.tryParse(matiWeight.text) ?? 0;
+    int designWeightValue = int.tryParse(designWeight.text) ?? 0;
+    netWeight.text = (matiWeightValue + designWeightValue).toString();
+    submitDate = _parseDate(data['submitDate']);
+    submitWeight.text = (data['submitWeight'] ?? 0).toString();
     workDone = data['workDone'] ?? false;
-    msgController.text = data['msg'] ?? '';
+    paymentDone = data['paymentDone'] ?? false;
+    paymentDate = _parseDate(data['paymentDate']);
+    note.text = data['note'] ?? '';
 
     showDialog(
       context: context,
@@ -198,7 +213,7 @@ class _WorkManagementState extends State<WorkManagement> {
                   } else if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Text('No Works available');
+                    return const Text('No Employees available');
                   } else {
                     List<String> employees = snapshot.data!;
                     return Form(
@@ -213,7 +228,7 @@ class _WorkManagementState extends State<WorkManagement> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
-                              labelText: 'Select Employee',
+                              labelText: 'कामगार नाव ',
                             ),
                             items: employees.map((employee) {
                               return DropdownMenuItem<String>(
@@ -240,7 +255,7 @@ class _WorkManagementState extends State<WorkManagement> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
-                              labelText: 'Enter Shikka',
+                              labelText: 'शिक्का ',
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -256,7 +271,7 @@ class _WorkManagementState extends State<WorkManagement> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
-                              labelText: 'Enter Category',
+                              labelText: 'कॅटेगरी ',
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -265,20 +280,53 @@ class _WorkManagementState extends State<WorkManagement> {
                               return null;
                             },
                           ),
-
                           const SizedBox(height: 10),
                           TextFormField(
-                            controller: assignWeight,
+                            controller: matiWeight,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
-                              labelText: 'Enter Assign Weight',
+                              labelText: 'माटी वजन ',
                             ),
                             keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter the assign weight';
+                                return 'Please enter the Mati weight';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          TextFormField(
+                            controller: designWeight,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              labelText: 'डिझाईन वजन ',
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter design weight';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          TextFormField(
+                            controller: netWeight,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              labelText: 'नेट वजन ',
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter the net weight';
                               }
                               return null;
                             },
@@ -290,7 +338,7 @@ class _WorkManagementState extends State<WorkManagement> {
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
-                              labelText: 'Enter Submit Weight',
+                              labelText: 'Submit Weight',
                             ),
                             keyboardType: TextInputType.number,
                             validator: (value) {
@@ -301,46 +349,66 @@ class _WorkManagementState extends State<WorkManagement> {
                             },
                           ),
                           const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              const Text('Assign Date: '),
-                              TextButton(
-                                onPressed: () => _selectDate(context, true),
-                                child: Text(dateFormat.format(assignDate)),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Text('Submit Date: '),
-                              TextButton(
-                                onPressed: () => _selectDate(context, false),
-                                child: Text(submitDate != null
-                                    ? dateFormat.format(submitDate!)
-                                    : 'N/A'),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          CheckboxListTile(
+                          SwitchListTile(
                             title: const Text('Work Done'),
                             value: workDone,
-                            onChanged: (bool? value) {
+                            onChanged: (value) {
                               setState(() {
-                                workDone = value ?? false;
+                                workDone = value;
+                              });
+                            },
+                          ),
+                          SwitchListTile(
+                            title: const Text('Payment Done'),
+                            value: paymentDone,
+                            onChanged: (value) {
+                              setState(() {
+                                paymentDone = value;
                               });
                             },
                           ),
                           const SizedBox(height: 10),
                           TextFormField(
-                            controller: msgController,
+                            controller: note,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(5),
                               ),
-                              labelText: 'Add a note',
+                              labelText: 'Note',
                             ),
                             maxLines: 3,
+                          ),
+                          const SizedBox(height: 10),
+                          TextButton(
+                            onPressed: () {
+                              if (_formKey.currentState?.validate() ?? false) {
+                                // Perform update
+                                FirebaseFirestore.instance
+                                    .collection("works")
+                                    .doc(data.id)
+                                    .update({
+                                  'assignDate': assignDate.toIso8601String(),
+                                  'empName': empName,
+                                  'shikka': shikka.text,
+                                  'category': category.text,
+                                  'matiWeight': int.tryParse(matiWeight.text) ?? 0,
+                                  'designWeight': int.tryParse(designWeight.text) ?? 0,
+                                  'netWeight': int.tryParse(netWeight.text) ?? 0,
+                                  'submitDate': submitDate?.toIso8601String() ?? '',
+                                  'submitWeight': int.tryParse(submitWeight.text) ?? 0,
+                                  'workDone': workDone,
+                                  'amount': amount.text,
+                                  'paymentDone': paymentDone,
+                                  'paymentDate': paymentDate?.toIso8601String() ?? '',
+                                  'note': note.text,
+                                }).then((_) {
+                                  Navigator.pop(context);
+                                }).catchError((error) {
+                                  print('Failed to update work: $error');
+                                });
+                              }
+                            },
+                            child: const Text('Save Changes'),
                           ),
                         ],
                       ),
@@ -351,40 +419,20 @@ class _WorkManagementState extends State<WorkManagement> {
             );
           },
         ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                FirebaseFirestore.instance.collection('works').doc(data.id).update({
-                  'empName': empName,
-                  'shikka': shikka.text,
-                  'category': category.text,
-                  'assignWeight': int.parse(assignWeight.text),
-                  'submitWeight': int.parse(submitWeight.text),
-                  'assignDate': assignDate,
-                  'submitDate': submitDate,
-                  'workDone': workDone,
-                  'msg': msgController.text,
-                }).then((_) {
-                  Navigator.of(context).pop(); // Close the dialog after editing work
-                }).catchError((error) {
-                  print("Failed to update work: $error");
-                  // Handle error if necessary
-                });
-              }
-            },
-            child: const Text('Update'),
-          ),
-        ],
       ),
     );
   }
+
+// Helper method to parse date strings or timestamps
+  DateTime? _parseDate(dynamic date) {
+    if (date is Timestamp) {
+      return date.toDate();
+    } else if (date is String) {
+      return DateTime.tryParse(date);
+    }
+    return null;
+  }
+
 
   void _confirmDelete(BuildContext context, QueryDocumentSnapshot data) {
     showDialog(
@@ -401,7 +449,11 @@ class _WorkManagementState extends State<WorkManagement> {
           ),
           TextButton(
             onPressed: () {
-              FirebaseFirestore.instance.collection('works').doc(data.id).delete().then((_) {
+              FirebaseFirestore.instance
+                  .collection('works')
+                  .doc(data.id)
+                  .delete()
+                  .then((_) {
                 Navigator.of(context).pop(); // Close the dialog
               }).catchError((error) {
                 print("Failed to delete work: $error");
@@ -416,7 +468,8 @@ class _WorkManagementState extends State<WorkManagement> {
   }
 
   Future<List<String>> _getEmployees() async {
-    var querySnapshot = await FirebaseFirestore.instance.collection("employees").get();
+    var querySnapshot =
+        await FirebaseFirestore.instance.collection("employees").get();
     List<String> employees = [];
     for (var doc in querySnapshot.docs) {
       employees.add(doc.get('empName'));
@@ -425,6 +478,38 @@ class _WorkManagementState extends State<WorkManagement> {
   }
 
   void _addNewWork(BuildContext context) {
+    // Focus nodes for matiWeight and designWeight
+    final FocusNode matiWeightFocusNode = FocusNode();
+    final FocusNode designWeightFocusNode = FocusNode();
+
+    // Call this method to update netWeight based on matiWeight and designWeight
+    void updateNetWeight() {
+      final matiWeightValue = int.tryParse(matiWeight.text) ?? 0;
+      final designWeightValue = int.tryParse(designWeight.text) ?? 0;
+      final netWeightValue = matiWeightValue + designWeightValue;
+      // Only update netWeight if it changes
+      if (netWeight.text != netWeightValue.toString()) {
+        netWeight.text = netWeightValue.toString();
+      }
+    }
+
+    // Set up listeners to update netWeight when both fields lose focus
+    void setupFocusListeners() {
+      matiWeightFocusNode.addListener(() {
+        if (!matiWeightFocusNode.hasFocus) {
+          // Update netWeight when matiWeight loses focus
+          updateNetWeight();
+        }
+      });
+
+      designWeightFocusNode.addListener(() {
+        if (!designWeightFocusNode.hasFocus) {
+          // Update netWeight when designWeight loses focus
+          updateNetWeight();
+        }
+      });
+    }
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -434,9 +519,12 @@ class _WorkManagementState extends State<WorkManagement> {
         ),
         content: StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
+            setupFocusListeners(); // Setup listeners when dialog opens
+
             return SingleChildScrollView(
               child: FutureBuilder<List<String>>(
-                future: _getEmployees(), // Replace this with your actual method to get employees
+                future:
+                    _getEmployees(), // Replace this with your actual method to get employees
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const CircularProgressIndicator();
@@ -447,147 +535,146 @@ class _WorkManagementState extends State<WorkManagement> {
                   } else {
                     List<String> employees = snapshot.data!;
                     return Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          DropdownButtonFormField<String>(
-                            value: empName,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
+                        key: _formKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            DropdownButtonFormField<String>(
+                              value: empName,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                labelText: 'नाव ',
                               ),
-                              labelText: 'Select Employee',
+                              items: employees.map((employee) {
+                                return DropdownMenuItem<String>(
+                                  value: employee,
+                                  child: Text(employee),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  empName = newValue!;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please select an employee';
+                                }
+                                return null;
+                              },
                             ),
-                            items: employees.map((employee) {
-                              return DropdownMenuItem<String>(
-                                value: employee,
-                                child: Text(employee),
-                              );
-                            }).toList(),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                empName = newValue!;
-                              });
-                            },
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please select an employee';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: shikka,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: shikka,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                labelText: 'शिक्का ',
                               ),
-                              labelText: 'Enter Shikka',
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a shikka';
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a shikka';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: category,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: category,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                labelText: 'कॅटेगरी ',
                               ),
-                              labelText: 'Enter Category',
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter a category';
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter a category';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: assignWeight,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: matiWeight,
+                              focusNode: matiWeightFocusNode,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                labelText: 'माटी  वजन ',
                               ),
-                              labelText: 'Enter Assign Weight',
+                              keyboardType: TextInputType.number,
+                              // Remove onChanged handler since we use focus node instead
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter the Mati weight';
+                                }
+                                return null;
+                              },
                             ),
-                            keyboardType: TextInputType.number,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter the assign weight';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: submitWeight,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: designWeight,
+                              focusNode: designWeightFocusNode,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                labelText: 'डिझाईन वजन ',
                               ),
-                              labelText: 'Enter Submit Weight',
+                              keyboardType: TextInputType.number,
+                              // Remove onChanged handler since we use focus node instead
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter the design weight';
+                                }
+                                return null;
+                              },
                             ),
-                            keyboardType: TextInputType.number,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter the submit weight';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              const Text('Assign Date: '),
-                              TextButton(
-                                onPressed: () => _selectDate(context, true),
-                                child: Text(dateFormat.format(assignDate)),
+                            const SizedBox(height: 10),
+                            TextFormField(
+                              controller: netWeight,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                labelText: 'नेट वजन ',
                               ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Text('Submit Date: '),
-                              TextButton(
-                                onPressed: () => _selectDate(context, false),
-                                child: Text(submitDate != null
-                                    ? dateFormat.format(submitDate!)
-                                    : 'N/A'),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          CheckboxListTile(
-                            title: const Text('Work Done'),
-                            value: workDone,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                workDone = value ?? false;
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            controller: msgController,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              labelText: 'Add a note',
+                              keyboardType: TextInputType.number,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter the net weight';
+                                }
+                                return null;
+                              },
                             ),
-                            maxLines: 3,
-                          ),
-                        ],
-                      ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                const Text('Assign Date: '),
+                                TextButton(
+                                  onPressed: () => _selectDate(context, true),
+                                  child: Text(dateFormat.format(assignDate)),
+                                ),
+                              ],
+                            ),
+                            TextFormField(
+                              controller: note,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                labelText: 'Note',
+                              ),
+                              maxLines: 3,
+                            ),
+                          ],
+                        ),
                     );
                   }
                 },
@@ -606,15 +693,20 @@ class _WorkManagementState extends State<WorkManagement> {
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 FirebaseFirestore.instance.collection('works').add({
-                  'empName': empName,
-                  'shikka': shikka.text,
-                  'category': category.text,
-                  'assignWeight': int.parse(assignWeight.text),
-                  'submitWeight': int.parse(submitWeight.text),
-                  'assignDate': assignDate,
-                  'submitDate': submitDate,
-                  'workDone': workDone,
-                  'msg': msgController.text,
+                  'assignDate': assignDate.toIso8601String(),
+                  'empName': empName ?? 'N/A',
+                  'shikka': shikka.text.isNotEmpty ? shikka.text : 'N/A',
+                  'category': category.text.isNotEmpty ? category.text : 'N/A',
+                  'matiWeight': int.tryParse(matiWeight.text) ?? 0, // You might want to use 0 instead of 'N/A' for numeric values
+                  'designWeight': int.tryParse(designWeight.text) ?? 0,
+                  'netWeight': int.tryParse(netWeight.text) ?? 0,
+                  'submitDate': submitDate?.toIso8601String() ?? 'N/A',
+                  'submitWeight': int.tryParse(submitWeight.text) ?? 0,
+                  'workDone': workDone, // Assuming `false` is a suitable default value for boolean fields
+                  'amount': amount.text.isNotEmpty ? amount.text : 'N/A',
+                  'paymentDone': paymentDone,
+                  'paymentDate': paymentDate?.toIso8601String() ?? 'N/A',
+                  'note': note.text.isNotEmpty ? note.text : 'N/A',
                 }).then((_) {
                   resetValues();
                   Navigator.of(context).pop();
@@ -623,6 +715,7 @@ class _WorkManagementState extends State<WorkManagement> {
                   print("Failed to add work: $error");
                   // Handle error if necessary
                 });
+
               }
             },
             child: const Text('Add'),
@@ -635,7 +728,7 @@ class _WorkManagementState extends State<WorkManagement> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black26,
+      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(
@@ -674,15 +767,18 @@ class _WorkManagementState extends State<WorkManagement> {
     setState(() {
       empName = null;
       shikka.clear();
+      amount.clear();
       category.clear();
-      assignWeight.clear();
+      designWeight.clear();
+      matiWeight.clear();
+      netWeight.clear();
       submitWeight.clear();
-      assignDate = assignDate;
+      assignDate = DateTime.now();
       submitDate = null;
+      paymentDate = null;
       workDone = false;
-      msgController.clear();
+      paymentDone = false;
+      note.clear();
     });
   }
-
 }
-
